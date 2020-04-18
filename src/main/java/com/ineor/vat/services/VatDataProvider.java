@@ -5,13 +5,17 @@
  */
 package com.ineor.vat.services;
 
+import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.Collections;
 import java.util.OptionalDouble;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -26,10 +30,10 @@ import org.springframework.util.ResourceUtils;
  */
 @Service
 public class VatDataProvider implements IDataProvider {
-	
+
 	@Autowired
 	JSONParser parser;
-	
+
 	JSONArray vat_data = new JSONArray();
 
 	/**
@@ -43,7 +47,7 @@ public class VatDataProvider implements IDataProvider {
 		}
 		return this.vat_data;
 	}
-	
+
 	@Override
 	/**
 	 * Data Should be loaded from the git, but VAT service is not accessable
@@ -51,17 +55,21 @@ public class VatDataProvider implements IDataProvider {
 	 * should be the same as it was on the service
 	 */
 	public JSONArray LoadData() {
-		JSONObject raw_loaded_data = new JSONObject();
-		JSONArray converted_data = new JSONArray();
+		var raw_loaded_data = new JSONObject();
+		var converted_data = new JSONArray();
 		try {
-			var file = ResourceUtils.getFile("classpath:vat_rates.json");//vat rates file will be fixed
-			raw_loaded_data = (JSONObject) this.parser.parse(new FileReader(file));
+			try( InputStream inputStream = getClass().getResourceAsStream("/vat_rates.json");
+				BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream))) {
+				String contents = reader.lines()
+					.collect(Collectors.joining(System.lineSeparator()));
+				raw_loaded_data = (JSONObject) this.parser.parse(contents);
+			}
 			if (raw_loaded_data.containsKey("rates")) {
 				var vats = (JSONArray) raw_loaded_data.get("rates");
 				vats = this.CleanInputData(vats);
 				converted_data = vats;
 			}
-			
+
 		} catch (FileNotFoundException ex) {
 			Logger.getLogger(VatDataProvider.class.getName()).log(Level.SEVERE, null, ex);
 		} catch (IOException | ParseException ex) {
@@ -71,7 +79,7 @@ public class VatDataProvider implements IDataProvider {
 		}
 		return converted_data;
 	}
-	
+
 	private JSONArray CleanInputData(JSONArray json) {
 		final JSONArray result = new JSONArray();
 		json.forEach(item -> {
@@ -87,23 +95,23 @@ public class VatDataProvider implements IDataProvider {
 
 		//Because of usage in labmda this is in place sort and not new object
 		this.SortVatJsonData(result);
-		
+
 		return result;
 	}
-	
+
 	private JSONArray SortVatJsonData(JSONArray data) {
 		Collections.sort(data, (JSONObject a, JSONObject b) -> {
 			var valA = (double) a.get("vat");
 			var valB = (double) b.get("vat");
-			
+
 			return (int) (valA - valB);
 		});
 		return data;
 	}
-	
+
 	@Override
 	public OptionalDouble CalculateStandardVat(JSONArray vats) {
 		return vats.stream().mapToDouble(i -> (Double) ((JSONObject) i).get("vat")).average();
 	}
-	
+
 }
