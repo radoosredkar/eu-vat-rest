@@ -13,4 +13,5 @@ import org.json.simple.JSONArray;
  */
 public interface IDataProvider {
 	JSONArray LoadData();
+	public JSONArray Data();
 }

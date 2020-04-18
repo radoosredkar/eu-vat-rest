@@ -5,12 +5,10 @@
  */
 package com.ineor.vat.services;
 
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.json.simple.JSONArray;
@@ -26,7 +24,7 @@ import org.springframework.util.ResourceUtils;
  * @author rado
  */
 @Service
-public final class VatDataProvider implements IDataProvider {
+public class VatDataProvider implements IDataProvider {
 
 	@Autowired
 	JSONParser parser;
