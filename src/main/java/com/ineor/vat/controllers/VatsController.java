@@ -22,6 +22,7 @@ import org.json.simple.JSONObject;
 import org.springframework.util.ResourceUtils;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
+import org.springframework.web.bind.annotation.PathVariable;
 
 /**
  *
@@ -46,6 +47,38 @@ public class VatsController {
 		return vats.toString();
 	}
 
+	@GetMapping(path = "/vats/lowest/{no_of_displayed}", produces = "application/json")
+	public String vats_lowest(@PathVariable int no_of_displayed) throws ParseException {
+		JSONArray vats = null;
+		try {
+			File file = ResourceUtils.getFile("classpath:vat_rates.json");
+			JSONParser parser = new JSONParser();
+			var json = (JSONObject) parser.parse(new FileReader(file));
+			vats = (JSONArray) json.get("rates");
+			vats = CleanInputData((JSONArray) vats);
+
+		} catch (IOException e) {
+
+		}
+		return vats.subList(0, no_of_displayed).toString();
+	}
+
+	@GetMapping(path = "/vats/highest/{no_of_displayed}", produces = "application/json")
+	public String vats_highest(@PathVariable int no_of_displayed) throws ParseException {
+		JSONArray vats = null;
+		try {
+			File file = ResourceUtils.getFile("classpath:vat_rates.json");
+			JSONParser parser = new JSONParser();
+			var json = (JSONObject) parser.parse(new FileReader(file));
+			vats = (JSONArray) json.get("rates");
+			vats = CleanInputData((JSONArray) vats);
+
+		} catch (IOException e) {
+
+		}
+		return vats.subList(vats.size() - no_of_displayed - 1, vats.size() - 1 ).toString();
+	}
+	
 	private JSONArray CleanInputData(JSONArray json) {
 		JSONArray result = new JSONArray();
 		json.forEach(item -> {
