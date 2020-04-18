@@ -5,23 +5,17 @@
  */
 package com.ineor.vat.controllers;
 
+import com.ineor.vat.services.VatDataProvider;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Properties;
-import java.io.File;
-import java.io.FileReader;
+import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
-import java.util.Iterator;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
-import org.springframework.util.ResourceUtils;
-import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PathVariable;
 
 /**
@@ -31,87 +25,47 @@ import org.springframework.web.bind.annotation.PathVariable;
 @RestController
 public class VatsController {
 
+	@Autowired
+	VatDataProvider vatDataProvider;
+
 	@GetMapping(path = "/vats", produces = "application/json")
-	public String vats() throws ParseException {
+	public JSONArray vats() throws ParseException {
 		JSONArray vats = null;
 		try {
-			File file = ResourceUtils.getFile("classpath:vat_rates.json");
-			JSONParser parser = new JSONParser();
-			var json = (JSONObject) parser.parse(new FileReader(file));
-			vats = (JSONArray) json.get("rates");
-			vats = CleanInputData((JSONArray) vats);
-
-		} catch (IOException e) {
-
+			vats = vatDataProvider.Data();
+		} catch (Exception ex) {
+			Logger.getLogger(VatsController.class.getName()).log(Level.SEVERE, null, ex);
 		}
-		return vats.toString();
+		return vats;
 	}
 
 	@GetMapping(path = "/vats/lowest/{no_of_displayed}", produces = "application/json")
-	public String vats_lowest(@PathVariable int no_of_displayed) throws ParseException {
-		JSONArray vats = null;
+	public List vats_lowest(@PathVariable int no_of_displayed) throws ParseException {
+		List result = new ArrayList();
 		try {
-			File file = ResourceUtils.getFile("classpath:vat_rates.json");
-			JSONParser parser = new JSONParser();
-			var json = (JSONObject) parser.parse(new FileReader(file));
-			vats = (JSONArray) json.get("rates");
-			vats = CleanInputData((JSONArray) vats);
-
-		} catch (IOException e) {
-
+			var vats = vatDataProvider.Data();
+			if (vats != null) {
+				result = vats.subList(0, no_of_displayed);
+			}
+		} catch (Exception ex) {
+			Logger.getLogger(VatsController.class.getName()).log(Level.SEVERE, null, ex);
 		}
-		return vats.subList(0, no_of_displayed).toString();
+		return result.subList(0, no_of_displayed);
 	}
 
 	@GetMapping(path = "/vats/highest/{no_of_displayed}", produces = "application/json")
-	public String vats_highest(@PathVariable int no_of_displayed) throws ParseException {
-		JSONArray vats = null;
+	public List vats_highest(@PathVariable int no_of_displayed) throws ParseException {
+		List result = new ArrayList();
 		try {
-			File file = ResourceUtils.getFile("classpath:vat_rates.json");
-			JSONParser parser = new JSONParser();
-			var json = (JSONObject) parser.parse(new FileReader(file));
-			vats = (JSONArray) json.get("rates");
-			vats = CleanInputData((JSONArray) vats);
-
-		} catch (IOException e) {
-
-		}
-		return vats.subList(vats.size() - no_of_displayed - 1, vats.size() - 1 ).toString();
-	}
-	
-	private JSONArray CleanInputData(JSONArray json) {
-		JSONArray result = new JSONArray();
-		json.forEach(item -> {
-			var country = ((JSONObject) item).get("name");
-			var periods = ((JSONObject) item).get("periods");
-			var rate = ((JSONObject) ((JSONObject) ((JSONArray) periods).get(0)).get("rates"));
-			var vat = ((JSONObject) rate).get("standard");
-			JSONObject itm = new JSONObject();
-			itm.put("country", country);
-			itm.put("vat", vat);
-			result.add(itm);
-		});
-		Collections.sort(result, new Comparator<JSONObject>() {
-
-			public int compare(JSONObject a, JSONObject b) {
-				double valA = -1.0;
-				double valB = -1.0;
-
-				valA = (double) a.get("vat");
-				valB = (double) b.get("vat");
-
-				return (int) (valA - valB);
+			var vats = vatDataProvider.Data();
+			if (vats != null) {
+				result = vats.subList(vats.size() - no_of_displayed - 1, vats.size() - 1);
+				Collections.reverse(result);
 			}
-		});
+
+		} catch (Exception ex) {
+			Logger.getLogger(VatsController.class.getName()).log(Level.SEVERE, null, ex);
+		}
 		return result;
 	}
-}
-
-class SortByRate implements Comparator<JSONObject> {
-
-	@Override
-	public int compare(JSONObject arg0, JSONObject arg1) {
-		return -1;
-	}
-
 }
