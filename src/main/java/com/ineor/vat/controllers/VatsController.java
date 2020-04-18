@@ -6,21 +6,17 @@
 package com.ineor.vat.controllers;
 
 import com.ineor.vat.services.IDataProvider;
-import com.ineor.vat.services.VatDataProvider;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.MissingResourceException;
-import java.util.OptionalDouble;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.ParseException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.web.bind.annotation.PathVariable;
 
 /**

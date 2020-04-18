@@ -7,7 +7,6 @@ package com.ineor.vat.services;
 
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -22,7 +21,6 @@ import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.util.ResourceUtils;
 
 /**
  *
@@ -80,6 +78,12 @@ public class VatDataProvider implements IDataProvider {
 		return converted_data;
 	}
 
+	/**
+	 * Extract country name and vat rate from the raw data and add them to simplified 
+	 * json array.
+	 * @param JSONArray
+	 * @return 
+	 */
 	private JSONArray CleanInputData(JSONArray json) {
 		final JSONArray result = new JSONArray();
 		json.forEach(item -> {
@@ -98,7 +102,12 @@ public class VatDataProvider implements IDataProvider {
 
 		return result;
 	}
-
+	
+	/**
+	 * Sort simplified vat data by vat rate
+	 * @param data
+	 * @return Sorted JsonArray
+	 */
 	private JSONArray SortVatJsonData(JSONArray data) {
 		Collections.sort(data, (JSONObject a, JSONObject b) -> {
 			var valA = (double) a.get("vat");
