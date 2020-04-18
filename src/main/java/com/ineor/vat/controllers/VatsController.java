@@ -50,6 +50,8 @@ public class VatsController {
 		try {
 			var vats = vatDataProvider.Data();
 			if (vats != null) {
+				var vats_size = vats.size();
+				no_of_displayed = no_of_displayed > vats_size ? vats_size : no_of_displayed;
 				result = vats.subList(0, no_of_displayed);
 			} else {
 				throw new Exception("Missing Data");
@@ -66,7 +68,9 @@ public class VatsController {
 		try {
 			var vats = vatDataProvider.Data();
 			if (vats != null) {
-				result = vats.subList(vats.size() - no_of_displayed - 1, vats.size() - 1);
+				var vats_size = vats.size()-1;
+				no_of_displayed = no_of_displayed > vats_size ? vats_size : no_of_displayed;
+				result = vats.subList(vats.size() - no_of_displayed - 1, vats_size);
 				Collections.reverse(result);
 			} else {
 				throw new Exception("Missing Data");
