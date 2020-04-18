@@ -13,9 +13,11 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.MissingResourceException;
+import java.util.OptionalDouble;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
 import org.json.simple.parser.ParseException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -66,6 +68,23 @@ public class VatsController {
 			if (vats != null) {
 				result = vats.subList(vats.size() - no_of_displayed - 1, vats.size() - 1);
 				Collections.reverse(result);
+			} else {
+				throw new Exception("Missing Data");
+			}
+
+		} catch (Exception ex) {
+			Logger.getLogger(VatsController.class.getName()).log(Level.SEVERE, null, ex);
+		}
+		return result;
+	}
+
+	@GetMapping(path = "/vats/average", produces = "application/json")
+	public JSONObject vats_average() throws ParseException {
+		JSONObject result = new JSONObject();
+		try {
+			var vats = vatDataProvider.Data();
+			if (vats != null) {
+				result.put("StandardEUVat", vatDataProvider.CalculateStandardVat(vatDataProvider.Data()));
 			} else {
 				throw new Exception("Missing Data");
 			}

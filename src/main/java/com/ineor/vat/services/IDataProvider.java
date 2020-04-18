@@ -5,6 +5,7 @@
  */
 package com.ineor.vat.services;
 
+import java.util.OptionalDouble;
 import org.json.simple.JSONArray;
 
 /**
@@ -14,4 +15,5 @@ import org.json.simple.JSONArray;
 public interface IDataProvider {
 	JSONArray LoadData();
 	public JSONArray Data();
+	public OptionalDouble CalculateStandardVat(JSONArray vats);
 }
